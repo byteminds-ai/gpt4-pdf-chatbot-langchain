@@ -13,9 +13,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const { question, history } = req.body;
-
-  console.log('question', question);
+  const { question, history = [], type = 'morse' } = req.body;
 
   //only accept post requests
   if (req.method !== 'POST') {
@@ -28,6 +26,20 @@ export default async function handler(
   }
   // OpenAI recommends replacing newlines with spaces for best results
   const sanitizedQuestion = question.trim().replaceAll('\n', ' ');
+  // assign namespace from switch on context
+
+  let namespace;
+  switch (type) {
+    case 'morse':
+      namespace = PINECONE_NAME_SPACE_MORSE_FEDERICK;
+      break;
+    case 'pinecone-docs':
+      namespace = PINECONE_NAME_SPACE_PINECONE_DOCS_CRAWLED;
+      break;
+    default:
+      namespace = PINECONE_NAME_SPACE_MORSE_FEDERICK;
+      break;
+  }
 
   try {
     const index = pinecone.Index(PINECONE_INDEX_NAME);
@@ -38,19 +50,19 @@ export default async function handler(
       {
         pineconeIndex: index,
         textKey: 'text',
-        namespace: PINECONE_NAME_SPACE_PINECONE_DOCS_CRAWLED, //namespace comes from your config folder
+        namespace, //namespace comes from your config folder
       },
     );
 
     //create chain
     const chain = makeChain(vectorStore);
+
     //Ask a question using chat history
     const response = await chain.call({
       question: sanitizedQuestion,
       chat_history: history || [],
     });
 
-    console.log('response', response);
     res.status(200).json(response);
   } catch (error: any) {
     console.log('error', error);
