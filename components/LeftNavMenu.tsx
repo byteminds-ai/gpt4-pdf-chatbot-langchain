@@ -19,6 +19,9 @@ const LeftNavMenu: React.FC = () => {
       <button className="w-full p-2" onClick={() => handleTabClick('pinecone')}>
         Pinecone Docs Chat
       </button>
+      <button className="w-full p-2" onClick={() => handleTabClick('custom')}>
+        Custom PDF Upload
+      </button>
       {/* <button className="w-full p-2" onClick={() => handleTabClick('custom')}>
         Custom PDF Chat
       </button> */}
